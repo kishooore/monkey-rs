@@ -41,25 +41,31 @@ pub enum TokenType {
     Return,
 }
 
+pub const BANG: char = '!';
 pub const ASSIGN: char = '=';
 pub const PLUS: char = '+';
+pub const MINUS: char = '-';
+pub const SLASH: char = '/';
+pub const ASTERISK: char = '*';
 pub const LPARAN: char = '(';
 pub const RPARAN: char = ')';
 pub const LBRACE: char = '{';
 pub const RBRACE: char = '}';
 pub const COMMA: char = ',';
 pub const SEMICOLON: char = ';';
+pub const LT: char = '<';
+pub const GT: char = '>';
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Token {
     pub ty: TokenType,
-    pub lit: String
+    pub lit: String,
 }
 
 impl Token {
-   pub fn new(ty: TokenType, lit: String) -> Self {
-       Self { ty, lit }
-   }
+    pub fn new(ty: TokenType, lit: String) -> Self {
+        Self { ty, lit }
+    }
 }
 
 pub fn lookup_ident(ident: &str) -> TokenType {
@@ -74,4 +80,3 @@ pub fn lookup_ident(ident: &str) -> TokenType {
         _ => TokenType::Ident,
     }
 }
-

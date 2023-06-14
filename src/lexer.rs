@@ -1,10 +1,10 @@
 use crate::token::*;
 
 struct Lexer {
-    input:         String,
-    position:      usize,
+    input: String,
+    position: usize,
     read_position: usize,
-    ch:            Option<char>,
+    ch: Option<char>,
 }
 
 impl Lexer {
@@ -13,7 +13,7 @@ impl Lexer {
             input,
             position: 0,
             read_position: 0,
-            ch: None
+            ch: None,
         };
         lexer.read_char();
         lexer
@@ -34,7 +34,13 @@ impl Lexer {
 
         let token = match self.ch.unwrap() {
             ASSIGN => Self::new_token(TokenType::Assign, self.ch.unwrap()),
+            BANG => Self::new_token(TokenType::Bang, self.ch.unwrap()),
             PLUS => Self::new_token(TokenType::Plus, self.ch.unwrap()),
+            MINUS => Self::new_token(TokenType::Minus, self.ch.unwrap()),
+            SLASH => Self::new_token(TokenType::Slash, self.ch.unwrap()),
+            ASTERISK => Self::new_token(TokenType::Asterisk, self.ch.unwrap()),
+            LT => Self::new_token(TokenType::Lt, self.ch.unwrap()),
+            GT => Self::new_token(TokenType::Gt, self.ch.unwrap()),
             LPARAN => Self::new_token(TokenType::LParen, self.ch.unwrap()),
             RPARAN => Self::new_token(TokenType::RParen, self.ch.unwrap()),
             LBRACE => Self::new_token(TokenType::LBrace, self.ch.unwrap()),
@@ -59,7 +65,11 @@ impl Lexer {
     }
 
     fn skip_white_space(&mut self) {
-        while self.ch.unwrap() == ' ' || self.ch.unwrap() == '\t' || self.ch.unwrap() == '\n' || self.ch.unwrap() == '\r' {
+        while self.ch.unwrap() == ' '
+            || self.ch.unwrap() == '\t'
+            || self.ch.unwrap() == '\n'
+            || self.ch.unwrap() == '\r'
+        {
             self.read_char();
         }
     }
@@ -104,7 +114,7 @@ mod tests {
         let input = "=+(){},;";
 
         let mut lexer = Lexer::new(input.to_string());
-        let tests = vec!(
+        let tests = vec![
             Token::new(TokenType::Assign, "=".to_string()),
             Token::new(TokenType::Plus, "+".to_string()),
             Token::new(TokenType::LParen, "(".to_string()),
@@ -113,14 +123,20 @@ mod tests {
             Token::new(TokenType::RBrace, "}".to_string()),
             Token::new(TokenType::Comma, ",".to_string()),
             Token::new(TokenType::Semicolon, ";".to_string()),
-        );
-        for (i,test) in tests.iter().enumerate() {
+        ];
+        for (i, test) in tests.iter().enumerate() {
             let tok = lexer.next_token();
             if tok.lit != test.lit {
-                return Err(String::from(format!("test {:?} failed. literal wrong. expected={:?}, got={:?}", i, test.lit, tok.lit)));
+                return Err(String::from(format!(
+                    "test {:?} failed. literal wrong. expected={:?}, got={:?}",
+                    i, test.lit, tok.lit
+                )));
             }
             if tok.ty != test.ty {
-                return Err(String::from(format!("test {:?} failed. tokentype wrong. expected={:?}, got={:?}", i, test.ty, tok.ty)));
+                return Err(String::from(format!(
+                    "test {:?} failed. tokentype wrong. expected={:?}, got={:?}",
+                    i, test.ty, tok.ty
+                )));
             }
         }
         Ok(())
@@ -138,7 +154,7 @@ let add = fn(x, y) {
 let result = add(five, ten);";
 
         let mut lexer = Lexer::new(input.to_string());
-        let tests = vec!(
+        let tests = vec![
             Token::new(TokenType::Let, "let".to_string()),
             Token::new(TokenType::Ident, "five".to_string()),
             Token::new(TokenType::Assign, "=".to_string()),
@@ -175,15 +191,59 @@ let result = add(five, ten);";
             Token::new(TokenType::Ident, "ten".to_string()),
             Token::new(TokenType::RParen, ")".to_string()),
             Token::new(TokenType::Semicolon, ";".to_string()),
-        );
+        ];
 
-        for (i,test) in tests.iter().enumerate() {
+        for (i, test) in tests.iter().enumerate() {
             let tok = lexer.next_token();
             if tok.lit != test.lit {
-                return Err(String::from(format!("test {:?} failed. literal wrong. expected={:?}, got={:?}", i, test.lit, tok.lit)));
+                return Err(String::from(format!(
+                    "test {:?} failed. literal wrong. expected={:?}, got={:?}",
+                    i, test.lit, tok.lit
+                )));
             }
             if tok.ty != test.ty {
-                return Err(String::from(format!("test {:?} failed. tokentype wrong. expected={:?}, got={:?}", i, test.ty, tok.ty)));
+                return Err(String::from(format!(
+                    "test {:?} failed. tokentype wrong. expected={:?}, got={:?}",
+                    i, test.ty, tok.ty
+                )));
+            }
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn next_token_with_math_operators() -> Result<(), String> {
+        let input = "!-/*5;
+5 < 10 > 5;";
+
+        let mut lexer = Lexer::new(input.to_string());
+        let tests = vec![
+            Token::new(TokenType::Bang, "!".to_string()),
+            Token::new(TokenType::Minus, "-".to_string()),
+            Token::new(TokenType::Slash, "/".to_string()),
+            Token::new(TokenType::Asterisk, "*".to_string()),
+            Token::new(TokenType::Int, "5".to_string()),
+            Token::new(TokenType::Semicolon, ";".to_string()),
+            Token::new(TokenType::Int, "5".to_string()),
+            Token::new(TokenType::Lt, "<".to_string()),
+            Token::new(TokenType::Int, "10".to_string()),
+            Token::new(TokenType::Gt, ">".to_string()),
+            Token::new(TokenType::Int, "5".to_string()),
+            Token::new(TokenType::Semicolon, ";".to_string()),
+        ];
+        for (i, test) in tests.iter().enumerate() {
+            let tok = lexer.next_token();
+            if tok.lit != test.lit {
+                return Err(String::from(format!(
+                    "test {:?} failed. literal wrong. expected={:?}, got={:?}",
+                    i, test.lit, tok.lit
+                )));
+            }
+            if tok.ty != test.ty {
+                return Err(String::from(format!(
+                    "test {:?} failed. tokentype wrong. expected={:?}, got={:?}",
+                    i, test.ty, tok.ty
+                )));
             }
         }
         Ok(())
