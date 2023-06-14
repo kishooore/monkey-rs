@@ -105,7 +105,7 @@ mod tests {
 
         let mut lexer = Lexer::new(input.to_string());
         let tests = vec!(
-            Token::new(TokenType::Eq, "=".to_string()),
+            Token::new(TokenType::Assign, "=".to_string()),
             Token::new(TokenType::Plus, "+".to_string()),
             Token::new(TokenType::LParen, "(".to_string()),
             Token::new(TokenType::RParen, ")".to_string()),
@@ -120,7 +120,7 @@ mod tests {
                 return Err(String::from(format!("test {:?} failed. literal wrong. expected={:?}, got={:?}", i, test.lit, tok.lit)));
             }
             if tok.ty != test.ty {
-                return Err(String::from(format!("test {:?} failed. tokentype wrong. expected={:?}, got={:?}", i, test.lit, tok.lit)));
+                return Err(String::from(format!("test {:?} failed. tokentype wrong. expected={:?}, got={:?}", i, test.ty, tok.ty)));
             }
         }
         Ok(())
