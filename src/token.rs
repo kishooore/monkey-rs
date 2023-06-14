@@ -1,4 +1,5 @@
-enum TokenType {
+#[derive(Debug, PartialEq, Eq)]
+pub enum TokenType {
     Illegal,
     Eof,
 
@@ -40,46 +41,28 @@ enum TokenType {
     Return,
 }
 
-struct Token {
-    ty: TokenType,
-    lit: String
+pub const ASSIGN: char = '=';
+pub const PLUS: char = '+';
+pub const LPARAN: char = '(';
+pub const RPARAN: char = ')';
+pub const LBRACE: char = '{';
+pub const RBRACE: char = '}';
+pub const COMMA: char = ',';
+pub const SEMICOLON: char = ';';
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Token {
+    pub ty: TokenType,
+    pub lit: String
 }
 
 impl Token {
-   fn new(ty: TokenType, lit: String) -> Self {
+   pub fn new(ty: TokenType, lit: String) -> Self {
        Self { ty, lit }
    }
 }
-/*
-const ILLEGAL: &str = "ILLEGAL";
-const EOF: &str = "EOF";
-const ASSIGN: &str = "=";
-const PLUS: &str = "+";
-const MINUS: &str = "-";
-const BANG: &str = "!";
-const ASTERISK: &str = "*";
-const SLASH: &str = "/";
-const LT: &str = "<";
-const GT: &str = ">";
-const EQ: &str = "==";
-const NO_EQ: &str = "!=";
-const COMMA: &str = ",";
-const SEMICOLON: &str = ";";
-const LPAREN: &str = "(";
-const RPAREN: &str = ")";
-const LBRACE: &str = "{";
-const RBRACE: &str = "}";
-const FUNCTION: &str = "FUNCTION";
-const LET: &str = "LET";
-const IF: &str = "IF";
-const ELSE: &str = "ELSE";
-const TRUE: &str = "TRUE";
-const FALSE: &str = "FALSE";
-const RETURN: &str = "RETURN";
-*/
 
-
-fn lookup_ident(ident: &str) -> TokenType {
+pub fn lookup_ident(ident: &str) -> TokenType {
     match ident {
         "fn" => TokenType::Function,
         "let" => TokenType::Let,
