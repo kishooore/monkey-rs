@@ -29,24 +29,46 @@ impl Lexer {
         self.read_position += 1;
     }
 
+    fn peek_char(&self) -> Option<char> {
+        if self.read_position >= self.input.len() {
+            None
+        } else {
+            self.input.chars().nth(self.read_position)
+        }
+    }
+
     pub fn next_token(&mut self) -> Token {
         self.skip_white_space();
 
         let token = match self.ch.unwrap() {
-            ASSIGN => Self::new_token(TokenType::Assign, self.ch.unwrap()),
-            BANG => Self::new_token(TokenType::Bang, self.ch.unwrap()),
-            PLUS => Self::new_token(TokenType::Plus, self.ch.unwrap()),
-            MINUS => Self::new_token(TokenType::Minus, self.ch.unwrap()),
-            SLASH => Self::new_token(TokenType::Slash, self.ch.unwrap()),
-            ASTERISK => Self::new_token(TokenType::Asterisk, self.ch.unwrap()),
-            LT => Self::new_token(TokenType::Lt, self.ch.unwrap()),
-            GT => Self::new_token(TokenType::Gt, self.ch.unwrap()),
-            LPARAN => Self::new_token(TokenType::LParen, self.ch.unwrap()),
-            RPARAN => Self::new_token(TokenType::RParen, self.ch.unwrap()),
-            LBRACE => Self::new_token(TokenType::LBrace, self.ch.unwrap()),
-            RBRACE => Self::new_token(TokenType::RBrace, self.ch.unwrap()),
-            COMMA => Self::new_token(TokenType::Comma, self.ch.unwrap()),
-            SEMICOLON => Self::new_token(TokenType::Semicolon, self.ch.unwrap()),
+            '<' => Self::new_token(TokenType::Lt, self.ch.unwrap()),
+            '>' => Self::new_token(TokenType::Gt, self.ch.unwrap()),
+            '=' => {
+                if Some('=') == self.peek_char() {
+                    self.read_char();
+                    Token::new(TokenType::Eq, "==".to_string())
+                } else {
+                    Token::new(TokenType::Assign, "=".to_string())
+                }
+            }
+            '!' => {
+                if Some('=') == self.peek_char() {
+                    self.read_char();
+                    Token::new(TokenType::NoEq, "!=".to_string())
+                } else {
+                    Token::new(TokenType::Bang, "!".to_string())
+                }
+            },
+            '+' => Self::new_token(TokenType::Plus, self.ch.unwrap()),
+            '-' => Self::new_token(TokenType::Minus, self.ch.unwrap()),
+            '/' => Self::new_token(TokenType::Slash, self.ch.unwrap()),
+            '(' => Self::new_token(TokenType::LParen, self.ch.unwrap()),
+            ')' => Self::new_token(TokenType::RParen, self.ch.unwrap()),
+            '{' => Self::new_token(TokenType::LBrace, self.ch.unwrap()),
+            '}' => Self::new_token(TokenType::RBrace, self.ch.unwrap()),
+            ',' => Self::new_token(TokenType::Comma, self.ch.unwrap()),
+            ';' => Self::new_token(TokenType::Semicolon, self.ch.unwrap()),
+            '*' => Self::new_token(TokenType::Asterisk, self.ch.unwrap()),
             _ => {
                 if Self::is_letter(self.ch.unwrap()) {
                     let literal = self.read_identifier();
@@ -214,7 +236,9 @@ let result = add(five, ten);";
     #[test]
     fn next_token_with_math_operators() -> Result<(), String> {
         let input = "!-/*5;
-5 < 10 > 5;";
+5 < 10 > 5;
+10 == 10;
+9 != 10;";
 
         let mut lexer = Lexer::new(input.to_string());
         let tests = vec![
@@ -229,6 +253,14 @@ let result = add(five, ten);";
             Token::new(TokenType::Int, "10".to_string()),
             Token::new(TokenType::Gt, ">".to_string()),
             Token::new(TokenType::Int, "5".to_string()),
+            Token::new(TokenType::Semicolon, ";".to_string()),
+            Token::new(TokenType::Int, "10".to_string()),
+            Token::new(TokenType::Eq, "==".to_string()),
+            Token::new(TokenType::Int, "10".to_string()),
+            Token::new(TokenType::Semicolon, ";".to_string()),
+            Token::new(TokenType::Int, "9".to_string()),
+            Token::new(TokenType::NoEq, "!=".to_string()),
+            Token::new(TokenType::Int, "10".to_string()),
             Token::new(TokenType::Semicolon, ";".to_string()),
         ];
         for (i, test) in tests.iter().enumerate() {
