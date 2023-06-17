@@ -280,4 +280,50 @@ let result = add(five, ten);";
         }
         Ok(())
     }
+
+    #[test]
+    fn next_token_with_conditional_statements() -> Result<(), String> {
+        let input = "if (5 < 10) {
+	return true;
+} else {
+	return false;
+}";
+    
+        let mut lexer = Lexer::new(input.to_string());
+        let tests = vec![
+            Token::new(TokenType::If, "if".to_string()),
+            Token::new(TokenType::LParen, "(".to_string()),
+            Token::new(TokenType::Int, "5".to_string()),
+            Token::new(TokenType::Lt, "<".to_string()),
+            Token::new(TokenType::Int, "10".to_string()),
+            Token::new(TokenType::RParen, ")".to_string()),
+            Token::new(TokenType::LBrace, "{".to_string()),
+            Token::new(TokenType::Return, "return".to_string()),
+            Token::new(TokenType::True, "true".to_string()),
+            Token::new(TokenType::Semicolon, ";".to_string()),
+            Token::new(TokenType::RBrace, "}".to_string()),
+            Token::new(TokenType::Else, "else".to_string()),
+            Token::new(TokenType::LBrace, "{".to_string()),
+            Token::new(TokenType::Return, "return".to_string()),
+            Token::new(TokenType::False, "false".to_string()),
+            Token::new(TokenType::Semicolon, ";".to_string()),
+            Token::new(TokenType::RBrace, "}".to_string()),
+        ];
+        for (i, test) in tests.iter().enumerate() {
+            let tok = lexer.next_token();
+            if tok.lit != test.lit {
+                return Err(String::from(format!(
+                    "test {:?} failed. literal wrong. expected={:?}, got={:?}",
+                    i, test.lit, tok.lit
+                )));
+            }
+            if tok.ty != test.ty {
+                return Err(String::from(format!(
+                    "test {:?} failed. tokentype wrong. expected={:?}, got={:?}",
+                    i, test.ty, tok.ty
+                )));
+            }
+        }
+        Ok(())
+    }
 }
