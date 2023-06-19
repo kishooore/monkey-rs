@@ -91,10 +91,10 @@ impl Lexer {
     }
 
     fn skip_white_space(&mut self) {
-        while self.ch.unwrap() == ' '
+        while self.ch != None && (self.ch.unwrap() == ' '
             || self.ch.unwrap() == '\t'
             || self.ch.unwrap() == '\n'
-            || self.ch.unwrap() == '\r'
+            || self.ch.unwrap() == '\r')
         {
             self.read_char();
         }
