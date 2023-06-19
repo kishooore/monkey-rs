@@ -1,6 +1,6 @@
 use crate::token::*;
 
-struct Lexer {
+pub struct Lexer {
     input: String,
     position: usize,
     read_position: usize,
@@ -8,7 +8,7 @@ struct Lexer {
 }
 
 impl Lexer {
-    fn new(input: String) -> Self {
+    pub fn new(input: String) -> Self {
         let mut lexer = Self {
             input,
             position: 0,
@@ -37,53 +37,57 @@ impl Lexer {
         }
     }
 
-    pub fn next_token(&mut self) -> Token {
+    pub fn next_token(&mut self) -> Option<Token> {
         self.skip_white_space();
 
-        let token = match self.ch.unwrap() {
-            '<' => Self::new_token(TokenType::Lt, self.ch.unwrap()),
-            '>' => Self::new_token(TokenType::Gt, self.ch.unwrap()),
-            '=' => {
-                if Some('=') == self.peek_char() {
-                    self.read_char();
-                    Token::new(TokenType::Eq, "==".to_string())
-                } else {
-                    Token::new(TokenType::Assign, "=".to_string())
+        if let Some(ch) = self.ch {
+            let token = match ch {
+                '<' => Self::new_token(TokenType::Lt, self.ch.unwrap()),
+                '>' => Self::new_token(TokenType::Gt, self.ch.unwrap()),
+                '=' => {
+                    if Some('=') == self.peek_char() {
+                        self.read_char();
+                        Token::new(TokenType::Eq, "==".to_string())
+                    } else {
+                        Token::new(TokenType::Assign, "=".to_string())
+                    }
                 }
-            }
-            '!' => {
-                if Some('=') == self.peek_char() {
-                    self.read_char();
-                    Token::new(TokenType::NoEq, "!=".to_string())
-                } else {
-                    Token::new(TokenType::Bang, "!".to_string())
+                '!' => {
+                    if Some('=') == self.peek_char() {
+                        self.read_char();
+                        Token::new(TokenType::NoEq, "!=".to_string())
+                    } else {
+                        Token::new(TokenType::Bang, "!".to_string())
+                    }
+                },
+                '+' => Self::new_token(TokenType::Plus, self.ch.unwrap()),
+                '-' => Self::new_token(TokenType::Minus, self.ch.unwrap()),
+                '/' => Self::new_token(TokenType::Slash, self.ch.unwrap()),
+                '(' => Self::new_token(TokenType::LParen, self.ch.unwrap()),
+                ')' => Self::new_token(TokenType::RParen, self.ch.unwrap()),
+                '{' => Self::new_token(TokenType::LBrace, self.ch.unwrap()),
+                '}' => Self::new_token(TokenType::RBrace, self.ch.unwrap()),
+                ',' => Self::new_token(TokenType::Comma, self.ch.unwrap()),
+                ';' => Self::new_token(TokenType::Semicolon, self.ch.unwrap()),
+                '*' => Self::new_token(TokenType::Asterisk, self.ch.unwrap()),
+                _ => {
+                    if Self::is_letter(self.ch.unwrap()) {
+                        let literal = self.read_identifier();
+                        let token_type = lookup_ident(literal);
+                        return Some(Token::new(token_type, literal.to_string()))
+                    } else if Self::is_digit(self.ch.unwrap()) {
+                        return Some(Token::new(TokenType::Int, self.read_number().to_string()))
+                    } else {
+                        return Some(Self::new_token(TokenType::Illegal, self.ch.unwrap()))
+                    }
                 }
-            },
-            '+' => Self::new_token(TokenType::Plus, self.ch.unwrap()),
-            '-' => Self::new_token(TokenType::Minus, self.ch.unwrap()),
-            '/' => Self::new_token(TokenType::Slash, self.ch.unwrap()),
-            '(' => Self::new_token(TokenType::LParen, self.ch.unwrap()),
-            ')' => Self::new_token(TokenType::RParen, self.ch.unwrap()),
-            '{' => Self::new_token(TokenType::LBrace, self.ch.unwrap()),
-            '}' => Self::new_token(TokenType::RBrace, self.ch.unwrap()),
-            ',' => Self::new_token(TokenType::Comma, self.ch.unwrap()),
-            ';' => Self::new_token(TokenType::Semicolon, self.ch.unwrap()),
-            '*' => Self::new_token(TokenType::Asterisk, self.ch.unwrap()),
-            _ => {
-                if Self::is_letter(self.ch.unwrap()) {
-                    let literal = self.read_identifier();
-                    let token_type = lookup_ident(literal);
-                    return Token::new(token_type, literal.to_string());
-                } else if Self::is_digit(self.ch.unwrap()) {
-                    return Token::new(TokenType::Int, self.read_number().to_string());
-                } else {
-                    return Self::new_token(TokenType::Illegal, self.ch.unwrap());
-                }
-            }
-        };
-        self.read_char();
+            };
+            self.read_char();
+            Some(token)
+        } else {
+            None
+        }
 
-        token
     }
 
     fn skip_white_space(&mut self) {
@@ -147,7 +151,7 @@ mod tests {
             Token::new(TokenType::Semicolon, ";".to_string()),
         ];
         for (i, test) in tests.iter().enumerate() {
-            let tok = lexer.next_token();
+            let tok = lexer.next_token().unwrap();
             if tok.lit != test.lit {
                 return Err(String::from(format!(
                     "test {:?} failed. literal wrong. expected={:?}, got={:?}",
@@ -216,7 +220,7 @@ let result = add(five, ten);";
         ];
 
         for (i, test) in tests.iter().enumerate() {
-            let tok = lexer.next_token();
+            let tok = lexer.next_token().unwrap();
             if tok.lit != test.lit {
                 return Err(String::from(format!(
                     "test {:?} failed. literal wrong. expected={:?}, got={:?}",
@@ -264,7 +268,7 @@ let result = add(five, ten);";
             Token::new(TokenType::Semicolon, ";".to_string()),
         ];
         for (i, test) in tests.iter().enumerate() {
-            let tok = lexer.next_token();
+            let tok = lexer.next_token().unwrap();
             if tok.lit != test.lit {
                 return Err(String::from(format!(
                     "test {:?} failed. literal wrong. expected={:?}, got={:?}",
@@ -310,7 +314,7 @@ let result = add(five, ten);";
             Token::new(TokenType::RBrace, "}".to_string()),
         ];
         for (i, test) in tests.iter().enumerate() {
-            let tok = lexer.next_token();
+            let tok = lexer.next_token().unwrap();
             if tok.lit != test.lit {
                 return Err(String::from(format!(
                     "test {:?} failed. literal wrong. expected={:?}, got={:?}",
